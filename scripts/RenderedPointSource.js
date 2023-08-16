@@ -497,6 +497,7 @@ PATCHES.WEBGL.METHODS = {
  * @returns {Set<Wall>}
  */
 function _getWalls(bounds) {
+  
   const origin = PIXI.Point.fromObject(this);
   bounds ??= this.bounds;
   const collisionTest = o => this._testWallInclusion(o.t, origin);
@@ -616,6 +617,7 @@ function EVVisionMask() {
  * New getter: RenderedPointSource.prototype.bounds
  */
 export function bounds() {
+  if(this.constructor.sourceType === "sight") return this.los.bounds;
   const r = this.radius ?? this.data.externalRadius;
   if ( !r ) return this.object?.bounds ?? new PIXI.Rectangle(this.x - 1, this.y - 1, 2, 2);
 
