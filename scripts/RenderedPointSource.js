@@ -554,6 +554,10 @@ function thresholdApplies(wall) {
 * @returns {boolean}
  */
 function hasWallCollision(origin, testPt) {
+  let distSquared = Math.pow(origin.x - testPt.x,2) + Math.pow(origin.y - testPt.y,2);
+  if (distSquared < Math.pow(this.fov.config.radius,2) && !this.detectionMode.walls) return false;
+  //if the vision source has a detection mode that ignores walls, don't test for collision
+  //fov radius gives the radius of the current detection mode
   testPt = Point3d.fromObject(testPt);
 
   const xMinMax = Math.minMax(origin.x, testPt.x);
