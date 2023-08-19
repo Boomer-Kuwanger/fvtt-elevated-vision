@@ -727,6 +727,7 @@ precision ${PIXI.settings.PRECISION_VERTEX} float;
 uniform sampler2D uTerrainSampler;
 uniform vec3 uLightPosition;
 uniform vec4 uElevationRes; // min, step, maxpixel, multiplier
+uniform vec4 uSceneDims;
 
 in vec2 vVertexPosition;
 in vec2 vTerrainTexCoord;
@@ -839,9 +840,12 @@ void main() {
   if ( (fWallSenseType == DISTANCE_WALL || fWallSenseType == PROXIMATE_WALL)
     && fThresholdRadius2 != 0.0
     && distanceSquared(vVertexPosition, uLightPosition.xy) < fThresholdRadius2 ) return;
+    
  // WIP fix token vision artifacts using WebGL shaders
+ 
  // Get the elevation at this fragment.
   float canvasElevation = uElevationRes.x;
+  
  //screenDims = vec2 (1250 , 1017); "Need to learn how to actually insert variable in this language..."
  //For some reason world coords that gl_FragCoord pulls do not always match pixel coords
  //On my PC the following transformation works on scenes with total pixel width less than 4000
@@ -856,6 +860,7 @@ void main() {
 
  //gl_FragCoord uses world coords, so the noShadow() regions do not move with the token position like when using vTerrainTexCoord
   float elevation = terrainElevation(uTerrainSampler, FragmentCoord, uElevationRes);
+  
   // If elevation is above the wall, then no shadow.
   if ( elevation > fWallHeights.x ) {
     fragColor = noShadow();
