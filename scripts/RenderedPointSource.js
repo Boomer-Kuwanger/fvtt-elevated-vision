@@ -96,8 +96,8 @@ _createPolygon
 */
 
 export const PATCHES = {};
+PATCHES.BASIC = {};
 PATCHES.POLYGONS = {};
-PATCHES.VISIBILITY = {};
 PATCHES.WEBGL = {};
 
 // ----- NOTE: Polygon Shadows ----- //
@@ -554,12 +554,16 @@ function thresholdApplies(wall) {
 * @returns {boolean}
  */
 function hasWallCollision(origin, testPt) {
+
   let distSquared = Math.pow(origin.x - testPt.x,2) + Math.pow(origin.y - testPt.y,2);
   if (distSquared < Math.pow(this.fov.config.radius,2) && !this.detectionMode.walls) return false;
   //if the vision source has a detection mode that ignores walls, don't test for collision
   //fov radius gives the radius of the current detection mode
+
+  origin = Point3d.fromObject(origin);
   testPt = Point3d.fromObject(testPt);
 
+  // Get walls within the bounding box that frames origin --> testPt.
   const xMinMax = Math.minMax(origin.x, testPt.x);
   const yMinMax = Math.minMax(origin.y, testPt.y);
   const lineBounds = new PIXI.Rectangle(xMinMax.min, yMinMax.min, xMinMax.max - xMinMax.min, yMinMax.max - yMinMax.min);
@@ -569,25 +573,22 @@ function hasWallCollision(origin, testPt) {
   // Test the intersection of the ray with each wall.
   const dir = testPt.subtract(origin);
   return walls.some(w => {
-    
 
     // Check if the test point falls within an attenuation area.
-    const wallPts = Point3d.fromWall(w);
+    const wallPts = Point3d.fromWall(w, { finite: true });
     const v0 = wallPts.A.top;
     const v1 = wallPts.A.bottom;
     const v2 = wallPts.B.bottom;
     const v3 = wallPts.B.top;
-    //if user does not have wall height or does not give a wall height, this prevents NaN from infinity and -infinity values
-    if (!isFinite(v0.z)) v0.z = 9999;
-    if (!isFinite(v1.z)) v1.z = -9999;
-    if (!isFinite(v2.z)) v2.z = -9999;
-    if (!isFinite(v3.z)) v3.z = 9999;
+
+    const t = Plane.rayIntersectionQuad3dLD(origin, dir, v0, v1, v2, v3); // Null or t value
+    if (!t || t < 0 || t > 1 ) return false;
+    return true;
     
-    return Plane.rayIntersectionQuad3dLD(origin, dir, v0, v1, v2, v3); // Null or t value
   });
 }
 
-PATCHES.VISIBILITY.METHODS = {
+PATCHES.BASIC.METHODS = {
   hasWallCollision,
   _getWalls,
   _testWallInclusion,
