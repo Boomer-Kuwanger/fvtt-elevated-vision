@@ -497,6 +497,7 @@ PATCHES.WEBGL.METHODS = {
  * @returns {Set<Wall>}
  */
 function _getWalls(bounds) {
+  
   const origin = PIXI.Point.fromObject(this);
   bounds ??= this.bounds;
   const collisionTest = o => this._testWallInclusion(o.t, origin);
@@ -553,6 +554,12 @@ function thresholdApplies(wall) {
 * @returns {boolean}
  */
 function hasWallCollision(origin, testPt) {
+
+  let distSquared = Math.pow(origin.x - testPt.x,2) + Math.pow(origin.y - testPt.y,2);
+  if (distSquared < Math.pow(this.fov.config.radius,2) && !this.detectionMode.walls) return false;
+  //if the vision source has a detection mode that ignores walls, don't test for collision
+  //fov radius gives the radius of the current detection mode
+
   origin = Point3d.fromObject(origin);
   testPt = Point3d.fromObject(testPt);
 
@@ -566,15 +573,18 @@ function hasWallCollision(origin, testPt) {
   // Test the intersection of the ray with each wall.
   const dir = testPt.subtract(origin);
   return walls.some(w => {
+
     // Check if the test point falls within an attenuation area.
     const wallPts = Point3d.fromWall(w, { finite: true });
     const v0 = wallPts.A.top;
     const v1 = wallPts.A.bottom;
     const v2 = wallPts.B.bottom;
     const v3 = wallPts.B.top;
+
     const t = Plane.rayIntersectionQuad3dLD(origin, dir, v0, v1, v2, v3); // Null or t value
     if (!t || t < 0 || t > 1 ) return false;
     return true;
+    
   });
 }
 
@@ -612,6 +622,7 @@ function EVVisionMask() {
  * New getter: RenderedPointSource.prototype.bounds
  */
 export function bounds() {
+  if(this.constructor.sourceType === "sight") return this.los.bounds;
   const r = this.radius ?? this.data.externalRadius;
   if ( !r ) return this.object?.bounds ?? new PIXI.Rectangle(this.x - 1, this.y - 1, 2, 2);
 
