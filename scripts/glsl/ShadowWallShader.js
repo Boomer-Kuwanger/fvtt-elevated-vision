@@ -849,7 +849,7 @@ void main() {
  //screenDims = vec2 (1250 , 1017); "Need to learn how to actually insert variable in this language..."
  //For some reason world coords that gl_FragCoord pulls do not always match pixel coords
  //On my PC the following transformation works on scenes with total pixel width less than 4000
- //That total pixel width inludes the buffer zone of the canvas, so the standard 4000 by 3000 with 0.25 buffer does not tranfsorm correctly
+ //That total pixel width includes the buffer zone of the canvas, so the standard 4000 by 3000 with 0.25 buffer does not transform correctly
   
   vec2 FragmentCoord = ((gl_FragCoord.xy)/(uSceneDims.zw))-(uSceneDims.xy/uSceneDims.zw);
 
@@ -870,7 +870,8 @@ void main() {
 	
   // Determine the start and end of the shadow, relative to the light.
   vec2 nearFarShadowRatios = vec2(fNearRatio, 0.0);
-  //The code below does not seem to be needed with the above changes.
+  //Code below needs to be modified to correctly shorten shadows when the los triangle intersects terrain elevation
+  //Maybe test if gl_FragCoord.z is below the elevation.  Need to figure out how to transform gl_FragCoord.z to elevation correctly to implement that strategy.
   //if ( elevation > canvasElevation ) {
     // Elevation change relative the canvas.
     //float elevationChange = elevation - canvasElevation;
